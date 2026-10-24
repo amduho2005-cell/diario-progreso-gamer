@@ -7,6 +7,7 @@ import {
   type Videojuego,
   type VideojuegoDoc,
 } from "../models/videojuego.model.js";
+import { PartidaModel } from "../models/partida.model.js";
 import { NotFoundError, BadRequestError } from "../errors/errores.js";
 
 export interface FiltrosVideojuego {
@@ -76,6 +77,8 @@ export async function actualizar(id: string, datos: Record<string, unknown>): Pr
 export async function eliminar(id: string): Promise<void> {
   const juego = await VideojuegoModel.findByIdAndDelete(id);
   if (!juego) throw new NotFoundError(`No existe un videojuego con id ${id}`);
+  // Borrado en cascada: sin el juego, sus partidas quedarían como referencias huérfanas.
+  await PartidaModel.deleteMany({ videojuego: id });
 }
 
 // ---------- Logros (sub-documentos embebidos) ----------
