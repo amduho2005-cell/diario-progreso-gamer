@@ -191,7 +191,7 @@ Build de producción: `npm run build` en cada carpeta (backend compila a `backen
 | Start Command | `npm start` |
 | Variables de entorno | `MONGODB_URI` = cadena de Atlas · `CORS_ORIGIN` = `FRONTEND_URL` (sin `/` final; admite varias separadas por comas) · `NODE_ENV` = `production` |
 
-`PORT` lo asigna Render automáticamente y el servidor lo lee de `process.env.PORT`. `typescript` y los `@types/*` están en `dependencies` para que `npm run build` funcione en Render. Opcional: ejecutar el seed una vez desde la *Shell* del servicio con `npm run seed`.
+`PORT` lo asigna Render automáticamente y el servidor lo lee de `process.env.PORT`. `typescript` y los `@types/*` están en `dependencies` para que `npm run build` funcione en Render. Para cargar datos de ejemplo en producción, corre `npm run seed` **desde tu computadora** (el `.env` local apunta al mismo cluster de Atlas); en Render no se instala `tsx` porque es devDependency.
 
 **2. Frontend — Static Site**
 
