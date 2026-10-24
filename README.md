@@ -209,8 +209,10 @@ Build de producción: `npm run build` en cada carpeta (backend compila a `backen
 
 ## 8. URLs públicas
 
-- Backend: `BACKEND_URL` (ej. `BACKEND_URL/api/videojuegos`)
-- Frontend: `FRONTEND_URL`
+- **Frontend:** https://diario-progreso-gamer-1-ugo1.onrender.com
+- **Backend:** https://diario-progreso-gamer-b994.onrender.com (ej. [`/api/videojuegos`](https://diario-progreso-gamer-b994.onrender.com/api/videojuegos), [`/api/salud`](https://diario-progreso-gamer-b994.onrender.com/api/salud))
+
+> En el plan gratuito de Render el backend se suspende tras 15 min sin uso: la primera petición puede tardar ~50 s.
 
 ## 9. Flujo de Git
 
