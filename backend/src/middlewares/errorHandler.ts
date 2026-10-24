@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import type { NextFunction, Request, Response } from "express";
-import { BadRequestError, NotFoundError } from "../errors/errores.js";
+import { BadRequestError, NotFoundError, ReferenciaInexistenteError } from "../errors/errores.js";
 import { env } from "../config/env.js";
 
 interface CuerpoError {
@@ -32,7 +32,10 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     return responder(400, "IdInvalido", `El valor "${String(err.value)}" no es un id válido para "${err.path}"`);
   }
 
-  // 3. Recurso / referencia inexistente → 404
+  // 3. Referencia inexistente / recurso no encontrado → 404
+  if (err instanceof ReferenciaInexistenteError) {
+    return responder(404, "ReferenciaInexistente", err.message);
+  }
   if (err instanceof NotFoundError) {
     return responder(404, "NoEncontrado", err.message);
   }

@@ -13,3 +13,11 @@ export class BadRequestError extends Error {
     this.name = "BadRequestError";
   }
 }
+
+// Una entidad apunta a otra que no existe (ej. partida con un videojuego inexistente) → 404.
+export class ReferenciaInexistenteError extends NotFoundError {
+  constructor(mensaje: string) {
+    super(mensaje);
+    this.name = "ReferenciaInexistenteError";
+  }
+}
