@@ -1,0 +1,152 @@
+### Diario de Progreso Gamer — pruebas manuales (REST Client / Thunder Client)
+# 1) npm run seed   2) npm run dev   3) Copia un _id real de "Listar videojuegos" en @juegoId,
+#    un _id de logro en @logroId y un _id de partida en @partidaId.
+
+@baseUrl = http://localhost:3000/api
+@juegoId = REEMPLAZAR_CON_ID_DE_VIDEOJUEGO
+@logroId = REEMPLAZAR_CON_ID_DE_LOGRO
+@partidaId = REEMPLAZAR_CON_ID_DE_PARTIDA
+
+### Salud
+GET {{baseUrl}}/salud
+
+############################ VIDEOJUEGOS ############################
+
+### Listar videojuegos
+GET {{baseUrl}}/videojuegos
+
+### Listar con filtros (plataforma, genero, estado, nombre parcial sin mayúsculas)
+GET {{baseUrl}}/videojuegos?plataforma=PC&estado=jugando&nombre=elden
+
+### Filtro con valor de enum inválido → 400
+GET {{baseUrl}}/videojuegos?plataforma=Atari
+
+### Obtener uno
+GET {{baseUrl}}/videojuegos/{{juegoId}}
+
+### Crear videojuego
+POST {{baseUrl}}/videojuegos
+Content-Type: application/json
+
+{
+  "nombre": "Hollow Knight",
+  "plataforma": "Switch",
+  "genero": "accion",
+  "estado": "jugando",
+  "logros": [
+    { "nombre": "Derrotar al Falso Caballero" },
+    { "nombre": "Conseguir el Ala de Monarca", "obtenido": true }
+  ]
+}
+
+### Actualizar videojuego (runValidators + new)
+PUT {{baseUrl}}/videojuegos/{{juegoId}}
+Content-Type: application/json
+
+{ "estado": "pausado" }
+
+### Eliminar videojuego (también borra sus partidas)
+DELETE {{baseUrl}}/videojuegos/{{juegoId}}
+
+############################ LOGROS (sub-documentos) ############################
+
+### Marcar logro como obtenido
+PATCH {{baseUrl}}/videojuegos/{{juegoId}}/logros/{{logroId}}
+Content-Type: application/json
+
+{ "obtenido": true }
+
+### Desmarcar logro
+PATCH {{baseUrl}}/videojuegos/{{juegoId}}/logros/{{logroId}}
+Content-Type: application/json
+
+{ "obtenido": false }
+
+### Logro inexistente → 404
+PATCH {{baseUrl}}/videojuegos/{{juegoId}}/logros/64b000000000000000000000
+Content-Type: application/json
+
+{ "obtenido": true }
+
+### Agregar logro
+POST {{baseUrl}}/videojuegos/{{juegoId}}/logros
+Content-Type: application/json
+
+{ "nombre": "Completar el juego al 100%" }
+
+### Eliminar logro
+DELETE {{baseUrl}}/videojuegos/{{juegoId}}/logros/{{logroId}}
+
+############################ PARTIDAS ############################
+
+### Listar partidas (populate de videojuego, fecha desc)
+GET {{baseUrl}}/partidas
+
+### Partidas en un rango de fechas (ej. "esta semana")
+GET {{baseUrl}}/partidas?desde=2026-09-28&hasta=2026-10-04
+
+### Obtener una partida
+GET {{baseUrl}}/partidas/{{partidaId}}
+
+### Crear partida
+POST {{baseUrl}}/partidas
+Content-Type: application/json
+
+{
+  "videojuego": "{{juegoId}}",
+  "fecha": "2026-10-05",
+  "duracionMinutos": 75,
+  "porcentajeAvance": 72,
+  "notas": "Explorando Leyndell"
+}
+
+### Actualizar partida
+PUT {{baseUrl}}/partidas/{{partidaId}}
+Content-Type: application/json
+
+{ "porcentajeAvance": 75 }
+
+### Eliminar partida
+DELETE {{baseUrl}}/partidas/{{partidaId}}
+
+### Partidas de un videojuego (ruta anidada)
+GET {{baseUrl}}/videojuegos/{{juegoId}}/partidas
+
+### RESUMEN calculado del videojuego
+GET {{baseUrl}}/videojuegos/{{juegoId}}/resumen
+
+############################ LOS 4 ERRORES ############################
+
+### ERROR 1 — Validación de esquema → 400 con detalle por campo
+POST {{baseUrl}}/videojuegos
+Content-Type: application/json
+
+{ "plataforma": "Atari", "genero": "terror" }
+
+### ERROR 1b — Validación en partida (duración < 1, avance > 100) → 400
+POST {{baseUrl}}/partidas
+Content-Type: application/json
+
+{ "videojuego": "{{juegoId}}", "fecha": "2026-10-05", "duracionMinutos": 0, "porcentajeAvance": 150 }
+
+### ERROR 2 — Id mal formado → 400
+GET {{baseUrl}}/videojuegos/abc
+
+### ERROR 3 — Partida con videojuego inexistente (ObjectId válido) → 404
+POST {{baseUrl}}/partidas
+Content-Type: application/json
+
+{ "videojuego": "64b000000000000000000000", "fecha": "2026-10-05", "duracionMinutos": 30, "porcentajeAvance": 10 }
+
+### ERROR 3b — Recurso no encontrado → 404
+GET {{baseUrl}}/videojuegos/64b000000000000000000000/resumen
+
+### ERROR 4 — Error inesperado → 500
+# Ruta de prueba que lanza un Error a propósito; solo existe si NODE_ENV != "production".
+# En desarrollo la respuesta incluye detalles.stack; en producción el stack nunca se envía.
+# Otra forma: con el servidor corriendo, quita tu IP de la "Network Access List" de Atlas
+# (o pausa el cluster) y vuelve a llamar a GET /videojuegos → 500 "ErrorInterno".
+GET {{baseUrl}}/debug/error
+
+### Ruta inexistente → 404 JSON
+GET {{baseUrl}}/no-existe
