@@ -34,7 +34,7 @@ const metaSchema = new Schema<Meta>(
       type: Schema.Types.ObjectId,
       ref: "Videojuego",
       required: [true, "El videojuego es obligatorio"],
-      index: true,
+      // Sin `index: true`: chocaría con el índice único parcial de abajo (misma clave, otras opciones).
     },
     horasSemanales: {
       type: Number,

@@ -6,7 +6,7 @@
 
 | Campo | Tipo | Reglas |
 |---|---|---|
-| `videojuego` | ObjectId → `Videojuego` | obligatorio, con índice |
+| `videojuego` | ObjectId → `Videojuego` | obligatorio; indexado por el índice único parcial (no lleva `index: true` propio: chocaría con él) |
 | `horasSemanales` | number | obligatorio, `> 0` y `≤ 100` |
 | `diasPorSemana` | number | obligatorio, entero de 1 a 7 |
 | `activa` | boolean | por defecto `true` |
