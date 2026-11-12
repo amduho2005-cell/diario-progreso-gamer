@@ -21,3 +21,11 @@ export class ReferenciaInexistenteError extends NotFoundError {
     this.name = "ReferenciaInexistenteError";
   }
 }
+
+// La operación choca con el estado actual (ej. segunda meta activa, juego completado) → 409.
+export class ConflictError extends Error {
+  constructor(mensaje: string) {
+    super(mensaje);
+    this.name = "ConflictError";
+  }
+}
