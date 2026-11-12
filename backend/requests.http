@@ -6,6 +6,7 @@
 @juegoId = REEMPLAZAR_CON_ID_DE_VIDEOJUEGO
 @logroId = REEMPLAZAR_CON_ID_DE_LOGRO
 @partidaId = REEMPLAZAR_CON_ID_DE_PARTIDA
+@metaId = REEMPLAZAR_CON_ID_DE_META
 
 ### Salud
 GET {{baseUrl}}/salud
@@ -150,3 +151,68 @@ GET {{baseUrl}}/debug/error
 
 ### Ruta inexistente → 404 JSON
 GET {{baseUrl}}/no-existe
+
+############################ E2 · METAS Y RACHAS ############################
+
+### PROGRESO SEMANAL calculado (semana lunes–domingo en hora de Ecuador, rachas e hitos)
+GET {{baseUrl}}/videojuegos/{{juegoId}}/progreso-semanal
+
+### Crear meta con hitos → 201 (el juego debe estar "jugando" o "pausado")
+POST {{baseUrl}}/metas
+Content-Type: application/json
+
+{
+  "videojuego": "{{juegoId}}",
+  "horasSemanales": 5,
+  "diasPorSemana": 4,
+  "hitos": [
+    { "descripcion": "Llegar al 25 %", "porcentajeObjetivo": 25 },
+    { "descripcion": "Llegar al 50 %", "porcentajeObjetivo": 50 },
+    { "descripcion": "Terminar el juego", "porcentajeObjetivo": 100 }
+  ]
+}
+
+### ERROR 409 — Segunda meta activa para el mismo juego (repetir la petición anterior)
+POST {{baseUrl}}/metas
+Content-Type: application/json
+
+{ "videojuego": "{{juegoId}}", "horasSemanales": 3, "diasPorSemana": 2 }
+
+### ERROR 400 — Meta fuera de rango (0 h, 8 días) → detalle por campo
+POST {{baseUrl}}/metas
+Content-Type: application/json
+
+{ "videojuego": "{{juegoId}}", "horasSemanales": 0, "diasPorSemana": 8 }
+
+### ERROR 404 — Meta para un videojuego inexistente
+POST {{baseUrl}}/metas
+Content-Type: application/json
+
+{ "videojuego": "64b000000000000000000000", "horasSemanales": 3, "diasPorSemana": 3 }
+
+### Metas del juego (historial, la más reciente primero)
+GET {{baseUrl}}/videojuegos/{{juegoId}}/metas
+
+### Obtener una meta
+GET {{baseUrl}}/metas/{{metaId}}
+
+### Editar meta (horas, días, hitos; "activa" se ignora) → el progreso usa la meta nueva
+PUT {{baseUrl}}/metas/{{metaId}}
+Content-Type: application/json
+
+{ "horasSemanales": 7 }
+
+### Desactivar meta (idempotente)
+PATCH {{baseUrl}}/metas/{{metaId}}/desactivar
+
+### ERROR 409 — Editar una meta desactivada
+PUT {{baseUrl}}/metas/{{metaId}}
+Content-Type: application/json
+
+{ "horasSemanales": 4 }
+
+### ERROR 400 / 404 — Progreso con id mal formado / juego inexistente
+GET {{baseUrl}}/videojuegos/abc/progreso-semanal
+
+###
+GET {{baseUrl}}/videojuegos/64b000000000000000000000/progreso-semanal
