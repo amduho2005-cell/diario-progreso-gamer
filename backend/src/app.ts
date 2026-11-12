@@ -6,6 +6,7 @@ import { logger } from "./middlewares/logger.js";
 import { errorHandler, rutaNoEncontrada } from "./middlewares/errorHandler.js";
 import { videojuegosRouter } from "./routes/videojuegos.routes.js";
 import { partidasRouter } from "./routes/partidas.routes.js";
+import { metasRouter } from "./routes/metas.routes.js";
 
 export const app = express();
 
@@ -19,6 +20,7 @@ app.get("/api/salud", (_req, res) => {
 });
 app.use("/api/videojuegos", videojuegosRouter);
 app.use("/api/partidas", partidasRouter);
+app.use("/api/metas", metasRouter);
 
 // Solo fuera de producción: ruta para comprobar manualmente el error 500.
 if (env.NODE_ENV !== "production") {

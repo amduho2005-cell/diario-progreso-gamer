@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as ctrl from "../controllers/videojuegos.controller.js";
 import * as partidasCtrl from "../controllers/partidas.controller.js";
+import * as metasCtrl from "../controllers/metas.controller.js";
 
 export const videojuegosRouter = Router();
 
@@ -18,3 +19,6 @@ videojuegosRouter.delete("/:id/logros/:logroId", ctrl.eliminarLogro);
 // Partidas de un juego y su resumen calculado
 videojuegosRouter.get("/:id/partidas", partidasCtrl.listarPorVideojuego);
 videojuegosRouter.get("/:id/resumen", partidasCtrl.resumen);
+
+// Metas del juego (historial)
+videojuegosRouter.get("/:id/metas", metasCtrl.listarPorVideojuego);
