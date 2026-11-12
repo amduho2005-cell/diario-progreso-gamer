@@ -143,4 +143,13 @@ La tabla 4.1 la genera `docs/evidencias/curl-e2.sh <URL_API>` (necesita `jq`); l
 ## 6. Tickets
 
 T-01 … T-14 terminados (ver estado en `docs/backlog/E2-metas-y-rachas.md`). T-15: esta auditoría, README y PR.
-Pendiente fuera del repositorio: redeploy de los dos servicios de Render con la rama integrada y prueba de humo en producción.
+Desplegado en Render el 2026-11-11 tras integrar el PR #3: `GET /api/videojuegos/:id/progreso-semanal` responde 200
+en producción (Hollow Knight: 2.1 h, 42 %, racha 2, mejor racha 4) y el panel de progreso se ve en el frontend público.
+
+## 7. Evidencias del harness
+
+| Evidencia | Archivo |
+|---|---|
+| `/hooks`: `PreToolUse` (proteger `.env`) y `PostToolUse` (type-check), ambos `[Project]` | [`evidencias/captura-hooks.png`](evidencias/captura-hooks.png) |
+| Skill `/commit` reconocida por Claude Code | [`evidencias/captura-skill-commit.png`](evidencias/captura-skill-commit.png) |
+| Skill `/nueva-spec` reconocida por Claude Code | [`evidencias/captura-skill-nueva-spec.png`](evidencias/captura-skill-nueva-spec.png) |

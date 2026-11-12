@@ -98,7 +98,7 @@ la forma de verificarlos está en `docs/specs/`. Fecha de referencia en los ejem
 | T-12 | frontend | Formulario de meta (crear/editar con hitos) y desactivar con confirmación | CA-1.1–1.3, 2.4, 3.1–3.3 | T-10, T-11 | Errores por campo; 409 visible; confirmación al desactivar | ✅ |
 | T-13 | deuda | D1: fecha de partida solo como día `YYYY-MM-DD` | CA-D1.1, D1.2 | T-01 | Test que falla primero; 400 con detalle por campo | ✅ |
 | T-14 | deuda | D2: rechazar partidas con fecha futura (hora de Ecuador) | CA-D2.1–D2.3 | T-13 | Ídem | ✅ |
-| T-15 | docs | Auditoría, README, bitácora, despliegue y PR | todos | todos | `docs/AUDITORIA.md` completa; Render actualizado; PR con tickets | ⏳ |
+| T-15 | docs | Auditoría, README, bitácora, despliegue y PR | todos | todos | `docs/AUDITORIA.md` completa; Render actualizado; PR con tickets | ✅ |
 
 ## Deuda técnica (diferida)
 
