@@ -20,5 +20,6 @@ videojuegosRouter.delete("/:id/logros/:logroId", ctrl.eliminarLogro);
 videojuegosRouter.get("/:id/partidas", partidasCtrl.listarPorVideojuego);
 videojuegosRouter.get("/:id/resumen", partidasCtrl.resumen);
 
-// Metas del juego (historial)
+// Metas del juego (historial) y progreso semanal calculado
 videojuegosRouter.get("/:id/metas", metasCtrl.listarPorVideojuego);
+videojuegosRouter.get("/:id/progreso-semanal", metasCtrl.progresoSemanal);

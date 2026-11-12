@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 import { MetaModel, type Meta, type MetaDoc } from "../models/meta.model.js";
 import { VideojuegoModel } from "../models/videojuego.model.js";
+import { PartidaModel } from "../models/partida.model.js";
 import { ConflictError, NotFoundError, ReferenciaInexistenteError } from "../errors/errores.js";
+import { calcularResumen } from "./partidas.service.js";
+import { calcularProgreso, type ProgresoSemanal } from "../dominio/progreso.js";
 
 // N-4: "activa" no se acepta del cliente; se desactiva con su propio endpoint y no se reactiva.
 function camposPermitidos(datos: Record<string, unknown>): Partial<Meta> {
@@ -59,4 +62,16 @@ export async function desactivar(id: string): Promise<MetaDoc> {
   const meta = await MetaModel.findByIdAndUpdate(id, { activa: false }, { new: true });
   if (!meta) throw new NotFoundError(`No existe una meta con id ${id}`);
   return meta;
+}
+
+// ---------- Progreso semanal (T-08) ----------
+// El servicio solo consulta; todo el cálculo lo hacen las funciones puras de src/dominio/progreso.ts.
+export async function obtenerProgreso(videojuegoId: string): Promise<ProgresoSemanal> {
+  await verificarVideojuego(videojuegoId);
+  const [partidas, meta] = await Promise.all([
+    PartidaModel.find({ videojuego: videojuegoId }).select("fecha duracionMinutos porcentajeAvance createdAt").lean(),
+    MetaModel.findOne({ videojuego: videojuegoId, activa: true }).lean(), // D-9 / H4: la meta activa de ahora
+  ]);
+  const { porcentajeAvanceActual } = calcularResumen(partidas); // D-8: mismo avance que el resumen de E1
+  return calcularProgreso({ partidas, meta, porcentajeAvanceActual, ahora: new Date() });
 }

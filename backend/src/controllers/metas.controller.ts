@@ -23,3 +23,7 @@ export async function desactivar(req: ConId, res: Response) {
 export async function listarPorVideojuego(req: ConId, res: Response) {
   res.json(await metasService.listarPorVideojuego(req.params.id));
 }
+
+export async function progresoSemanal(req: ConId, res: Response) {
+  res.json(await metasService.obtenerProgreso(req.params.id));
+}
