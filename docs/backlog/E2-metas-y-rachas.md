@@ -84,20 +84,20 @@ la forma de verificarlos está en `docs/specs/`. Fecha de referencia en los ejem
 
 | Id | Tipo | Título | Criterios | Depende de | Definition of Done | Estado |
 |---|---|---|---|---|---|---|
-| T-01 | chore | Script de tests con patrón y carpeta `dominio/` | — (P4) | — | `npm test` ejecuta todos los `*.test.ts`; los 4 tests de E1 siguen pasando | ⏳ |
-| T-02 | dominio | Semana, horas, porcentaje y días jugados (funciones puras) | CA-4.1–4.8, 4.10, 3.1 | T-01 | Tests escritos antes del código, uno por criterio; todos pasan | ⏳ |
-| T-03 | dominio | Racha actual y mejor racha | CA-5.1–5.6 | T-01 | Ídem | ⏳ |
-| T-04 | dominio | Hitos alcanzados | CA-2.1–2.3, 2.5 | T-01 | Ídem | ⏳ |
-| T-05 | backend | Modelo `Meta` y error 409 en el `errorHandler` | CA-1.3, 2.4 | — | Validaciones del esquema; 409 con formato estándar; type-check limpio | ⏳ |
-| T-06 | backend | CRUD de Meta (crear, obtener, listar por juego, actualizar, desactivar) | CA-1.1, 1.2, 1.4, 1.5, 3.1, 3.2, 3.6, 3.7 | T-05 | Endpoints probados con curl (200/201/400/404/409) | ⏳ |
-| T-07 | backend | Cascada al eliminar juego y desactivación al completar/abandonar | CA-3.4, 3.5 | T-05 | Probado con curl; sin metas huérfanas | ⏳ |
-| T-08 | backend | `GET /api/videojuegos/:id/progreso-semanal` | CA-4.1–4.10, 2.1–2.5, 5.x | T-02, T-03, T-04, T-06 | Juego sin partidas, juego con ≥5 partidas y racha rota, 400 y 404 probados | ⏳ |
-| T-09 | backend | Seed con metas e `requests.http` de E2 | — | T-08 | `npm run seed` carga metas; requests listos para la demo | ⏳ |
-| T-10 | frontend | Tipos y servicio `metasApi.ts` | — | T-06, T-08 | Sin `fetch` en componentes; build limpio | ⏳ |
-| T-11 | frontend | Sección de progreso semanal en el detalle | CA-4.7, 2.1, 6.1–6.3 | T-10 | Barras, días, rachas, hitos; estados carga/error/vacío; se recarga al eliminar partida | ⏳ |
-| T-12 | frontend | Formulario de meta (crear/editar con hitos) y desactivar con confirmación | CA-1.1–1.3, 2.4, 3.1–3.3 | T-10, T-11 | Errores por campo; 409 visible; confirmación al desactivar | ⏳ |
-| T-13 | deuda | D1: fecha de partida solo como día `YYYY-MM-DD` | CA-D1.1, D1.2 | T-01 | Test que falla primero; 400 con detalle por campo | ⏳ |
-| T-14 | deuda | D2: rechazar partidas con fecha futura (hora de Ecuador) | CA-D2.1–D2.3 | T-13 | Ídem | ⏳ |
+| T-01 | chore | Script de tests con patrón y carpeta `dominio/` | — (P4) | — | `npm test` ejecuta todos los `*.test.ts`; los 4 tests de E1 siguen pasando | ✅ |
+| T-02 | dominio | Semana, horas, porcentaje y días jugados (funciones puras) | CA-4.1–4.8, 4.10, 3.1 | T-01 | Tests escritos antes del código, uno por criterio; todos pasan | ✅ |
+| T-03 | dominio | Racha actual y mejor racha | CA-5.1–5.6 | T-01 | Ídem | ✅ |
+| T-04 | dominio | Hitos alcanzados | CA-2.1–2.3, 2.5 | T-01 | Ídem | ✅ |
+| T-05 | backend | Modelo `Meta` y error 409 en el `errorHandler` | CA-1.3, 2.4 | — | Validaciones del esquema; 409 con formato estándar; type-check limpio | ✅ |
+| T-06 | backend | CRUD de Meta (crear, obtener, listar por juego, actualizar, desactivar) | CA-1.1, 1.2, 1.4, 1.5, 3.1, 3.2, 3.6, 3.7 | T-05 | Endpoints probados con curl (200/201/400/404/409) | ✅ |
+| T-07 | backend | Cascada al eliminar juego y desactivación al completar/abandonar | CA-3.4, 3.5 | T-05 | Probado con curl; sin metas huérfanas | ✅ |
+| T-08 | backend | `GET /api/videojuegos/:id/progreso-semanal` | CA-4.1–4.10, 2.1–2.5, 5.x | T-02, T-03, T-04, T-06 | Juego sin partidas, juego con ≥5 partidas y racha rota, 400 y 404 probados | ✅ |
+| T-09 | backend | Seed con metas e `requests.http` de E2 | — | T-08 | `npm run seed` carga metas; requests listos para la demo | ✅ |
+| T-10 | frontend | Tipos y servicio `metasApi.ts` | — | T-06, T-08 | Sin `fetch` en componentes; build limpio | ✅ |
+| T-11 | frontend | Sección de progreso semanal en el detalle | CA-4.7, 2.1, 6.1–6.3 | T-10 | Barras, días, rachas, hitos; estados carga/error/vacío; se recarga al eliminar partida | ✅ |
+| T-12 | frontend | Formulario de meta (crear/editar con hitos) y desactivar con confirmación | CA-1.1–1.3, 2.4, 3.1–3.3 | T-10, T-11 | Errores por campo; 409 visible; confirmación al desactivar | ✅ |
+| T-13 | deuda | D1: fecha de partida solo como día `YYYY-MM-DD` | CA-D1.1, D1.2 | T-01 | Test que falla primero; 400 con detalle por campo | ✅ |
+| T-14 | deuda | D2: rechazar partidas con fecha futura (hora de Ecuador) | CA-D2.1–D2.3 | T-13 | Ídem | ✅ |
 | T-15 | docs | Auditoría, README, bitácora, despliegue y PR | todos | todos | `docs/AUDITORIA.md` completa; Render actualizado; PR con tickets | ⏳ |
 
 ## Deuda técnica (diferida)
