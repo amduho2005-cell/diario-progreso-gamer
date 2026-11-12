@@ -175,6 +175,9 @@ legend { padding: 0 0.4rem; color: var(--tenue); font-weight: 600; }
   .columnas { grid-template-columns: 1fr; }
   .stats { grid-template-columns: 1fr 1fr; }
   .stats > div:nth-child(3) { grid-column: 1 / -1; }
+  /* Progreso: la 1.ª celda ya es ancha; días + racha en una fila y mejor racha a lo ancho. */
+  .progreso .stats > div:nth-child(3) { grid-column: auto; }
+  .progreso .stats > div:nth-child(4) { grid-column: 1 / -1; }
 }
 
 /* ---------- Progreso semanal (E2) ---------- */

@@ -49,7 +49,15 @@ export function ProgresoSemanal({ videojuegoId, puedeTenerMeta, progreso }: Prop
           </div>
           <div>
             <dt>Días jugados</dt>
-            <dd>{p.diasJugadosSemana}{meta && <small className="meta"> de {meta.diasPorSemana}</small>}</dd>
+            <dd>
+              {p.diasJugadosSemana}{meta && <small className="meta"> de {meta.diasPorSemana}</small>}
+              {meta && (
+                <BarraProgreso
+                  valor={Math.round((p.diasJugadosSemana / meta.diasPorSemana) * 100)}
+                  texto={`${p.diasJugadosSemana}/${meta.diasPorSemana}`}
+                />
+              )}
+            </dd>
           </div>
           <div>
             <dt>Racha actual</dt>
