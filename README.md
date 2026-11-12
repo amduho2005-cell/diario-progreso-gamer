@@ -6,11 +6,15 @@ Proyecto full-stack del curso **Desarrollo Web 3**: backend en Express + TypeScr
 
 Una app para registrar los videojuegos que tengo, las partidas que juego de cada uno y un **resumen calculado** de mi progreso.
 
-**Pregunta que responde:** *¿qué estoy jugando ahora, cuánto le he dedicado y qué tan avanzado voy?*
+**Preguntas que responde:**
+- E1 (Proyecto 3): *¿qué estoy jugando ahora, cuánto le he dedicado y qué tan avanzado voy?*
+- E2 · Metas y rachas (Proyecto 4): *¿estoy cumpliendo lo que me propuse esta semana y cuántos días seguidos llevo jugando?*
 
 - **Videojuegos**: nombre, plataforma, género, estado (jugando / pausado / completado / abandonado) y su lista de logros.
 - **Partidas**: cada sesión de juego (fecha, duración, % de avance, notas).
 - **Resumen**: total de partidas, horas totales, última partida y avance actual de un juego, calculado en el backend en cada petición.
+- **Metas** (E2): por juego, horas y días por semana, con hasta 5 hitos de avance; una sola activa por juego.
+- **Progreso semanal** (E2): horas y días de la semana (lunes a domingo, hora de Ecuador), racha actual, mejor racha e hitos alcanzados, calculados en el backend con funciones puras (`backend/src/dominio/`).
 
 ## 2. Modelo de datos
 
@@ -39,6 +43,22 @@ Partida  (colección "partidas", timestamps)
 ├── createdAt
 └── updatedAt
 ```
+
+```
+Meta  (colección "metas", timestamps) — E2
+├── _id
+├── videojuego: ObjectId → ref "Videojuego" (required)        ← REFERENCIA
+├── horasSemanales: number (> 0 y ≤ 100)
+├── diasPorSemana: number entero (1–7)
+├── activa: boolean (default true)  — índice único parcial: máx. 1 activa por juego
+├── hitos: [ { descripcion, porcentajeObjetivo: 1–100 } ]  (máx. 5)   ← EMBEBIDOS
+├── createdAt
+└── updatedAt
+```
+
+- **Meta se referencia** porque tiene su propio ciclo de vida (se crea, se edita y se desactiva sin tocar la ficha del juego) y guarda un historial de metas anteriores.
+- **Los hitos se embeben** porque son pocos (máx. 5) y solo tienen sentido dentro de su meta.
+- **«Alcanzado» no se guarda**: se calcula con el avance actual del juego, para no duplicar un dato que ya está en las partidas.
 
 ### ¿Por qué `logros` se embebe?
 
@@ -116,6 +136,22 @@ Base: `/api`. Todas las respuestas son JSON e incluyen el header `X-Request-Id`.
 | PUT | `/partidas/:id` | Actualiza una partida (misma validación de referencia) | 200, 400, 404 |
 | DELETE | `/partidas/:id` | Elimina una partida | 204, 400, 404 |
 
+### Metas y progreso semanal (E2)
+
+| Método | Ruta | Descripción | Códigos |
+|---|---|---|---|
+| POST | `/metas` | Crea una meta `{ videojuego, horasSemanales, diasPorSemana, hitos? }`. Solo juegos `jugando`/`pausado` y sin otra meta activa | 201, 400, 404, 409 |
+| GET | `/metas/:id` | Obtiene una meta | 200, 400, 404 |
+| PUT | `/metas/:id` | Edita horas, días e hitos de una meta activa (`activa` se ignora) | 200, 400, 404, 409 |
+| PATCH | `/metas/:id/desactivar` | Desactiva la meta (queda en el historial) | 200, 400, 404 |
+| GET | `/videojuegos/:id/metas` | Historial de metas del juego (más reciente primero) | 200, 400, 404 |
+| GET | `/videojuegos/:id/progreso-semanal` | **Progreso calculado**: semana, meta, horas, % (sin tope: puede ser 140), días, rachas e hitos | 200, 400, 404 |
+
+Eliminar un videojuego también elimina sus metas; marcarlo como completado o abandonado desactiva su meta activa.
+Las reglas completas (huecos H1–H14) están en [`docs/prd/PRD.md`](docs/prd/PRD.md) y el contrato en
+[`docs/specs/backend-metas-progreso.md`](docs/specs/backend-metas-progreso.md). Desde E2, la `fecha` de una partida debe
+ser `AAAA-MM-DD` y no puede ser futura (400).
+
 Otros: `GET /api/salud` (health check), y cualquier ruta inexistente → 404 JSON.
 
 Ejemplos listos para ejecutar en [`backend/requests.http`](backend/requests.http) (extensión REST Client de VS Code o Thunder Client).
@@ -133,7 +169,8 @@ Un único `errorHandler` (último middleware) responde siempre con el mismo form
 | 1 | Validación de esquema (campo requerido, enum, min/max…) | `mongoose.Error.ValidationError` | **400** (con `detalles` por campo) | `ValidacionError` |
 | 2 | Id mal formado (ej. `/videojuegos/abc`) | `mongoose.Error.CastError` | **400** | `IdInvalido` |
 | 3 | Referencia inexistente (partida con un videojuego que no existe) / recurso no encontrado | `ReferenciaInexistenteError` / `NotFoundError` (propios, en `src/errors/`) | **404** | `ReferenciaInexistente` / `NoEncontrado` |
-| 4 | Error inesperado | cualquier otro | **500** (el `stack` solo se incluye si `NODE_ENV` ≠ `production`) | `ErrorInterno` |
+| 4 | Conflicto con el estado actual (segunda meta activa, meta para un juego completado, editar meta desactivada) | `ConflictError` / clave duplicada de MongoDB (11000) | **409** | `Conflicto` |
+| 5 | Error inesperado | cualquier otro | **500** (el `stack` solo se incluye si `NODE_ENV` ≠ `production`) | `ErrorInterno` |
 
 Además: filtros de query inválidos y body mal formado (`JSON` roto, `obtenido` no booleano) → 400. Express 5 envía automáticamente al `errorHandler` los errores de los controladores `async`, así que no hace falta un `asyncHandler`.
 
@@ -144,7 +181,8 @@ Middlewares: `requestId` (UUID con `crypto.randomUUID()`, en `res.locals.request
 1. **400 validación**: `POST /api/videojuegos` con `{ "plataforma": "Atari", "genero": "terror" }`.
 2. **400 id mal formado**: `GET /api/videojuegos/abc`.
 3. **404 referencia inexistente**: `POST /api/partidas` con `"videojuego": "64b000000000000000000000"` (ObjectId válido que no existe).
-4. **500**: en desarrollo, `GET /api/debug/error` (ruta de prueba que lanza un error; no existe en producción). Alternativa: con el servidor corriendo, quitar tu IP de *Network Access* en Atlas (o pausar el cluster) y llamar a `GET /api/videojuegos`.
+4. **409 conflicto**: `POST /api/metas` dos veces para el mismo juego (ver sección E2 de `requests.http`).
+5. **500**: en desarrollo, `GET /api/debug/error` (ruta de prueba que lanza un error; no existe en producción). Alternativa: con el servidor corriendo, quitar tu IP de *Network Access* en Atlas (o pausar el cluster) y llamar a `GET /api/videojuegos`.
 
 ## 6. Instalación y ejecución local
 
@@ -163,7 +201,7 @@ cp .env.example .env      # completa MONGODB_URI con tu cadena de Atlas
 npm install
 npm run seed              # limpia y carga datos de ejemplo
 npm run dev               # http://localhost:3000/api
-npm test                  # test de calcularResumen
+npm test                  # 34 tests: resumen (E1), progreso/rachas/hitos (E2) y fecha de partida
 ```
 
 **Frontend** (terminal 2):
@@ -216,9 +254,11 @@ Build de producción: `npm run build` en cada carpeta (backend compila a `backen
 
 ## 9. Flujo de Git
 
-- `main` contiene solo el commit inicial (README + `.gitignore`).
-- Todo el desarrollo se hizo en la rama **`feature/diario-gamer`**, con commits pequeños por capa (`config:`, `modelo:`, `servicio:`, `controlador:`, `ruta:`, `middleware:`, `test:`, `seed:`, `api:`, `pantalla:`…), siguiendo las etapas: diseño → backend Videojuego → backend Partida y resumen → frontend → despliegue.
-- La integración a `main` se hace mediante un **Pull Request** en GitHub (`feature/diario-gamer` → `main`).
+- E1 se desarrolló en **`feature/diario-gamer`** y se integró a `main` con los PR #1 y #2.
+- E2 se desarrolla en **`feature/e2-metas-rachas`** y se integra con un PR que lista los tickets (ver sección 10).
+- En E1 se hicieron commits pequeños por capa (`config:`, `modelo:`, `servicio:`, `controlador:`, `ruta:`, `middleware:`, `test:`, `seed:`, `api:`, `pantalla:`…), siguiendo las etapas: diseño → backend Videojuego → backend Partida y resumen → frontend → despliegue.
+- En E2 los commits de implementación nombran su ticket (`feat(E2): T-08 …`, `fix(deuda): T-13 …`) y los tests de dominio se commitean en rojo antes del código.
+- La integración a `main` se hace siempre mediante un **Pull Request** en GitHub.
 - `.env` nunca se commitea; sí `backend/.env.example` y `frontend/.env.example`.
 
 ## Estructura
@@ -226,8 +266,46 @@ Build de producción: `npm run build` en cada carpeta (backend compila a `backen
 ```
 diario-progreso-gamer/
 ├── backend/   Express 5 + TypeScript + Mongoose 8
-│   └── src/ config · models · services · controllers · routes · middlewares · errors · scripts/seed.ts · app.ts · server.ts
+│   └── src/ config · models · services · dominio · controllers · routes · middlewares · errors · scripts/seed.ts · app.ts · server.ts
 ├── frontend/  React + TypeScript + Vite + React Router
 │   └── src/ api · types · components · hooks · pages
+├── docs/      diagnóstico, PRD, backlog, specs, auditoría, bitácora del agente
+├── .claude/   skills y hooks del harness
+├── AGENTS.md · CLAUDE.md · DESIGN.md
 └── README.md
 ```
+
+## 10. Cómo trabajamos con el agente
+
+E2 se construyó con Claude Code siguiendo **Spec-Driven Development**:
+diagnóstico → harness → PRD → épica → historias → criterios → tickets → specs → código con tests → auditoría.
+Cada fase terminó en un commit, y cada spec está en el historial **antes** que el código que la implementa.
+
+**Harness**
+
+| Pieza | Archivo | Para qué |
+|---|---|---|
+| Memoria del proyecto | [`AGENTS.md`](AGENTS.md) (y [`CLAUDE.md`](CLAUDE.md) → `@AGENTS.md`) | Stack, estructura, comandos, convenciones y reglas (no tocar `.env`, nada sin spec, tests antes de terminar) |
+| Sistema de diseño | [`DESIGN.md`](DESIGN.md) | Colores, tipografía, espaciado, componentes, tono, accesibilidad y «no hacemos» |
+| Skill `/commit` | [`.claude/skills/commit`](.claude/skills/commit/SKILL.md) | Corre tests/build, verifica que la spec del ticket ya esté commiteada y escribe `feat(E2): T-XX …` |
+| Skill `/nueva-spec` | [`.claude/skills/nueva-spec`](.claude/skills/nueva-spec/SKILL.md) | Plantilla de spec: DEBE / NO DEBE, criterio → verificación, ticket → archivos |
+| Hook `PreToolUse` | [`.claude/hooks/proteger-env.sh`](.claude/hooks/proteger-env.sh) | Bloquea leer o editar cualquier `.env` (permite `.env.example`) |
+| Hook `PostToolUse` | [`.claude/hooks/typecheck.sh`](.claude/hooks/typecheck.sh) | Tras editar un `.ts/.tsx`, corre el type-check del paquete y avisa al agente si falla |
+
+Las skills tienen `disable-model-invocation: true`: solo las lanza una persona con `/commit` o `/nueva-spec`.
+
+**Dónde está cada documento**
+
+| Fase | Documento |
+|---|---|
+| Diagnóstico | [`docs/diagnostico.md`](docs/diagnostico.md) |
+| Producto | [`docs/prd/PRD.md`](docs/prd/PRD.md) (huecos H1–H14 resueltos) |
+| Épicas | [`docs/backlog/epicas.md`](docs/backlog/epicas.md) |
+| Historias, criterios, tickets y deuda | [`docs/backlog/E2-metas-y-rachas.md`](docs/backlog/E2-metas-y-rachas.md) |
+| Specs | [`docs/specs/`](docs/specs/) (backend, frontend y deuda de fechas) |
+| Auditoría (criterio → evidencia, pruebas curl, revisión de diseño) | [`docs/AUDITORIA.md`](docs/AUDITORIA.md) |
+| Bitácora del agente | [`docs/bitacora-agente.md`](docs/bitacora-agente.md) |
+
+**Trazabilidad de un criterio, de punta a punta (ejemplo H1 «la racha sigue viva si hoy aún no juegas»)**
+PRD H1 → HU-5 / CA-5.1 → ticket T-03 → spec backend regla D-6 → test `CA-5.1` en `backend/src/dominio/progreso.test.ts`
+→ `calcularRachas()` en `backend/src/dominio/progreso.ts` → fila CA-5.1 en `docs/AUDITORIA.md`.

@@ -5,6 +5,7 @@ import { DetalleVideojuego } from "./pages/DetalleVideojuego";
 import { FormVideojuego } from "./pages/FormVideojuego";
 import { ListaPartidas } from "./pages/ListaPartidas";
 import { NuevaPartida } from "./pages/NuevaPartida";
+import { FormMeta } from "./pages/FormMeta";
 import { NoEncontrado } from "./pages/NoEncontrado";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/videojuegos/nuevo" element={<FormVideojuego />} />
           <Route path="/videojuegos/:id" element={<DetalleVideojuego />} />
           <Route path="/videojuegos/:id/editar" element={<FormVideojuego key="editar" />} />
+          <Route path="/videojuegos/:id/meta" element={<FormMeta />} />
           <Route path="/partidas" element={<ListaPartidas />} />
           <Route path="/partidas/nueva" element={<NuevaPartida />} />
           <Route path="*" element={<NoEncontrado />} />

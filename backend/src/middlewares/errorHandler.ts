@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import type { NextFunction, Request, Response } from "express";
-import { BadRequestError, NotFoundError, ReferenciaInexistenteError } from "../errors/errores.js";
+import { BadRequestError, ConflictError, NotFoundError, ReferenciaInexistenteError } from "../errors/errores.js";
 import { env } from "../config/env.js";
 
 interface CuerpoError {
@@ -38,6 +38,14 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
   if (err instanceof NotFoundError) {
     return responder(404, "NoEncontrado", err.message);
+  }
+
+  // 409: conflicto con el estado actual (regla de negocio o índice único, ej. segunda meta activa)
+  if (err instanceof ConflictError) {
+    return responder(409, "Conflicto", err.message);
+  }
+  if (err instanceof mongoose.mongo.MongoServerError && err.code === 11000) {
+    return responder(409, "Conflicto", "Ya existe un registro que choca con este (ej. el videojuego ya tiene una meta activa)");
   }
 
   // Variantes de 400 propias: filtros de query o body con valores inválidos, JSON mal formado

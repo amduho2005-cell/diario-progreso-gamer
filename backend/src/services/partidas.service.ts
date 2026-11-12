@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { PartidaModel, type Partida, type PartidaDoc } from "../models/partida.model.js";
 import { VideojuegoModel } from "../models/videojuego.model.js";
 import { BadRequestError, NotFoundError, ReferenciaInexistenteError } from "../errors/errores.js";
+import { errorFechaPartida } from "../dominio/fechaPartida.js";
+import { diaEnEcuador } from "../dominio/progreso.js";
 
 export interface Resumen {
   totalPartidas: number;
@@ -61,6 +63,13 @@ async function validarReferencia(videojuegoId: unknown): Promise<void> {
   }
 }
 
+// Deuda D1/D2: la fecha debe ser un día real y no futuro (hora de Ecuador). Si falta, lo reporta el esquema.
+function validarFecha(fecha: unknown): void {
+  if (fecha === undefined) return;
+  const error = errorFechaPartida(fecha, diaEnEcuador(new Date()));
+  if (error) throw new BadRequestError("Los datos enviados no son válidos", { fecha: error });
+}
+
 async function verificarVideojuego(id: string): Promise<void> {
   if (!(await VideojuegoModel.exists({ _id: id }))) {
     throw new NotFoundError(`No existe un videojuego con id ${id}`);
@@ -95,12 +104,14 @@ export async function obtener(id: string): Promise<PartidaDoc> {
 }
 
 export async function crear(datos: Record<string, unknown>): Promise<PartidaDoc> {
+  validarFecha(datos.fecha);
   await validarReferencia(datos.videojuego);
   const partida = await PartidaModel.create(camposPermitidos(datos));
   return partida.populate("videojuego");
 }
 
 export async function actualizar(id: string, datos: Record<string, unknown>): Promise<PartidaDoc> {
+  validarFecha(datos.fecha);
   await validarReferencia(datos.videojuego);
   const partida = await PartidaModel.findByIdAndUpdate(id, camposPermitidos(datos), {
     new: true,

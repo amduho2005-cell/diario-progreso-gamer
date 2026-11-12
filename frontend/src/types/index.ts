@@ -69,6 +69,43 @@ export interface Resumen {
   porcentajeAvanceActual: number;
 }
 
+// ---------- E2 · Metas y rachas ----------
+
+export interface Hito {
+  descripcion: string;
+  porcentajeObjetivo: number;
+}
+
+export interface Meta {
+  _id: string;
+  videojuego: string;
+  horasSemanales: number;
+  diasPorSemana: number;
+  activa: boolean;
+  hitos: Hito[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// "activa" no se envía: la desactivación es una acción aparte (NF-3).
+export interface MetaInput {
+  horasSemanales: number;
+  diasPorSemana: number;
+  hitos: Hito[];
+}
+
+// Calculado SIEMPRE en el backend (GET /videojuegos/:id/progreso-semanal).
+export interface ProgresoSemanal {
+  semana: { inicio: string; fin: string };
+  meta: { _id: string; horasSemanales: number; diasPorSemana: number } | null;
+  horasSemana: number;
+  porcentajeHoras: number | null;
+  diasJugadosSemana: number;
+  rachaActual: number;
+  mejorRacha: number;
+  hitos: (Hito & { alcanzado: boolean })[];
+}
+
 export interface ErrorApi {
   error: { tipo: string; mensaje: string; detalles?: Record<string, string>; requestId: string };
 }

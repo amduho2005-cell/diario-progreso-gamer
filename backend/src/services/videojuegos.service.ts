@@ -8,6 +8,7 @@ import {
   type VideojuegoDoc,
 } from "../models/videojuego.model.js";
 import { PartidaModel } from "../models/partida.model.js";
+import { MetaModel } from "../models/meta.model.js";
 import { NotFoundError, BadRequestError } from "../errors/errores.js";
 
 export interface FiltrosVideojuego {
@@ -71,6 +72,10 @@ export async function actualizar(id: string, datos: Record<string, unknown>): Pr
     runValidators: true,
   });
   if (!juego) throw new NotFoundError(`No existe un videojuego con id ${id}`);
+  // H7: un juego completado o abandonado no puede tener meta activa.
+  if (juego.estado === "completado" || juego.estado === "abandonado") {
+    await MetaModel.updateMany({ videojuego: id, activa: true }, { activa: false });
+  }
   return juego;
 }
 
@@ -78,7 +83,8 @@ export async function eliminar(id: string): Promise<void> {
   const juego = await VideojuegoModel.findByIdAndDelete(id);
   if (!juego) throw new NotFoundError(`No existe un videojuego con id ${id}`);
   // Borrado en cascada: sin el juego, sus partidas quedarían como referencias huérfanas.
-  await PartidaModel.deleteMany({ videojuego: id });
+  // H8: tampoco quedan metas huérfanas (los hitos se van con su meta).
+  await Promise.all([PartidaModel.deleteMany({ videojuego: id }), MetaModel.deleteMany({ videojuego: id })]);
 }
 
 // ---------- Logros (sub-documentos embebidos) ----------
