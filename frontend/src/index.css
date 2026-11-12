@@ -176,3 +176,15 @@ legend { padding: 0 0.4rem; color: var(--tenue); font-weight: 600; }
   .stats { grid-template-columns: 1fr 1fr; }
   .stats > div:nth-child(3) { grid-column: 1 / -1; }
 }
+
+/* ---------- Progreso semanal (E2) ---------- */
+.progreso .stats { margin-top: 0.75rem; }
+.progreso .stats small { font-size: 0.9rem; font-weight: 400; }
+.progreso h3 { margin: 1.25rem 0 0.5rem; font-size: 1rem; }
+.racha { color: var(--amarillo); }
+.meta-cumplida { margin: 0.75rem 0 0; color: var(--verde); font-weight: 700; }
+.hitos { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.hitos li { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.6rem; border-radius: 8px; background: var(--fondo); border: 1px solid var(--borde); }
+.hitos li.alcanzado { color: var(--verde); border-color: var(--verde); }
+.hito-objetivo { margin-left: auto; color: var(--tenue); font-size: 0.85rem; white-space: nowrap; }
+.hitos li.alcanzado .hito-objetivo { color: inherit; }

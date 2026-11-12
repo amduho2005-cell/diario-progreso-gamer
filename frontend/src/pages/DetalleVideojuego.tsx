@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { videojuegosApi } from "../api/videojuegosApi";
 import { partidasApi } from "../api/partidasApi";
+import { metasApi } from "../api/metasApi";
 import { useCarga } from "../hooks/useCarga";
 import { Cargando, MensajeError, Vacio } from "../components/Estados";
 import { BarraProgreso } from "../components/BarraProgreso";
+import { ProgresoSemanal } from "../components/ProgresoSemanal";
 import { ETIQUETA_ESTADO, ETIQUETA_GENERO, formatearFecha, formatearMinutos } from "../utils";
 
 export function DetalleVideojuego() {
@@ -16,6 +18,8 @@ export function DetalleVideojuego() {
   // El resumen SIEMPRE lo calcula el backend; aquí solo se pide y se vuelve a pedir tras cada cambio.
   const resumen = useCarga(() => videojuegosApi.obtenerResumen(id), [id]);
   const partidas = useCarga(() => videojuegosApi.obtenerPartidas(id), [id]);
+  // E2: el progreso semanal también lo calcula el backend; se vuelve a pedir al abrir el detalle y al eliminar una partida.
+  const progreso = useCarga(() => metasApi.obtenerProgreso(id), [id]);
 
   async function accion(fn: () => Promise<void>) {
     setErrorAccion(null);
@@ -36,12 +40,12 @@ export function DetalleVideojuego() {
     accion(async () => {
       if (!confirm("¿Eliminar esta partida?")) return;
       await partidasApi.eliminar(partidaId);
-      await Promise.all([partidas.recargar(), resumen.recargar()]);
+      await Promise.all([partidas.recargar(), resumen.recargar(), progreso.recargar()]);
     });
 
   const eliminarJuego = () =>
     accion(async () => {
-      if (!confirm(`¿Eliminar "${juego.datos?.nombre}" y todas sus partidas?`)) return;
+      if (!confirm(`¿Eliminar "${juego.datos?.nombre}" con todas sus partidas y metas?`)) return;
       await videojuegosApi.eliminar(id);
       navigate("/videojuegos");
     });
@@ -68,6 +72,12 @@ export function DetalleVideojuego() {
       </div>
 
       {errorAccion && <MensajeError mensaje={errorAccion} />}
+
+      <ProgresoSemanal
+        videojuegoId={id}
+        puedeTenerMeta={j.estado === "jugando" || j.estado === "pausado"}
+        progreso={progreso}
+      />
 
       <div className="columnas">
         <article className="panel resumen">

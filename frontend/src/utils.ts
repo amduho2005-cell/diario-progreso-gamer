@@ -24,3 +24,7 @@ export const ETIQUETA_ESTADO: Record<Estado, string> = {
 
 export const formatearMinutos = (min: number) =>
   min >= 60 ? `${Math.floor(min / 60)} h ${min % 60 ? `${min % 60} min` : ""}`.trim() : `${min} min`;
+
+// "2026-11-09" → "9 nov" (días calendario: se formatean en UTC para no correrse un día).
+export const formatearDiaCorto = (dia: string) =>
+  new Date(`${dia}T00:00:00Z`).toLocaleDateString("es", { day: "numeric", month: "short", timeZone: "UTC" });
