@@ -10,5 +10,7 @@ export function errorFechaPartida(valor: unknown, hoy: string): string | null {
   if (isNaN(fecha.getTime()) || fecha.toISOString().slice(0, 10) !== valor) {
     return `La fecha ${valor} no existe en el calendario`;
   }
+  // D2 / H10: una partida futura inflaría la semana y la racha. "hoy" llega ya calculado en hora de Ecuador.
+  if (valor > hoy) return `La fecha no puede ser futura (hoy es ${hoy} en Ecuador)`;
   return null;
 }
