@@ -188,3 +188,4 @@ legend { padding: 0 0.4rem; color: var(--tenue); font-weight: 600; }
 .hitos li.alcanzado { color: var(--verde); border-color: var(--verde); }
 .hito-objetivo { margin-left: auto; color: var(--tenue); font-size: 0.85rem; white-space: nowrap; }
 .hitos li.alcanzado .hito-objetivo { color: inherit; }
+.logros-editables li input.input-porcentaje { flex: 0 0 6rem; }
